@@ -3,6 +3,7 @@ import process from 'node:process';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { platform } from 'node:os';
 
 import { WeChatApi } from './wechat/api.js';
 import { saveAccount, loadLatestAccount, type AccountData } from './wechat/accounts.js';
@@ -75,8 +76,19 @@ async function runSetup(): Promise<void> {
     const pngData = await QRCode.toBuffer(qrcodeUrl, { type: 'png', width: 400, margin: 2 });
     writeFileSync(QR_PATH, pngData);
 
-    // Open with system default viewer (Preview.app on macOS)
-    execSync(`open "${QR_PATH}"`);
+    // Open with system default viewer
+    const osPlatform = platform();
+    if (osPlatform === 'darwin') {
+      execSync(`open "${QR_PATH}"`);
+    } else if (osPlatform === 'linux') {
+      try {
+        execSync(`xdg-open "${QR_PATH}"`);
+      } catch {
+        console.log(`无法自动打开二维码，请手动打开: ${QR_PATH}`);
+      }
+    } else {
+      console.log(`请手动打开二维码图片: ${QR_PATH}`);
+    }
     console.log('已打开二维码图片，请用微信扫描：');
     console.log(`图片路径: ${QR_PATH}\n`);
     console.log('等待扫码绑定...');

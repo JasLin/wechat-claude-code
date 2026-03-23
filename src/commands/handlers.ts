@@ -9,6 +9,7 @@ const HELP_TEXT = `可用命令：
   /permission <模式> 切换权限模式
   /status           查看当前会话状态
   /skills           列出已安装的 skill
+  /compact          压缩当前会话上下文（减少 token 使用）
   /<skill> [参数]   触发已安装的 skill
 
 直接输入文字即可与 Claude Code 对话`;
@@ -106,6 +107,11 @@ export function handleSkills(): CommandResult {
   }
   const lines = skills.map(s => `/${s.name} — ${s.description}`);
   return { reply: `📋 已安装的 Skill (${skills.length}):\n\n${lines.join('\n')}`, handled: true };
+}
+
+export function handleCompact(ctx: CommandContext): CommandResult {
+  // 发送 "/compact" 给 Claude 处理
+  return { handled: true, claudePrompt: '/compact' };
 }
 
 export function handleUnknown(cmd: string, args: string): CommandResult {
